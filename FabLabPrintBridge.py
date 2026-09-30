@@ -72,7 +72,7 @@ class BridgeHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
+        self.send_header('Access-Control-Allow-Headers', '*')
         self.send_header('Access-Control-Allow-Private-Network', 'true')
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         super().end_headers()
@@ -910,18 +910,35 @@ if IN_FUSION:
                     temp_dir = os.path.join(tempfile.gettempdir(), 'fablab_bridge', f'session_{session_id}')
                     os.makedirs(temp_dir, exist_ok=True)
 
+                    requested_format = str(payload.get('format', '3mf')).lower()
                     manifest_parts = []
                     for idx, item in enumerate(resolved_bodies):
                         body = item['body']
                         sname = ''.join(c if c.isalnum() or c in ('_', '-') else '_' for c in body.name)
-                        stl_filename = f'{sname}.stl'
-                        stl_filepath = os.path.join(temp_dir, stl_filename)
 
-                        stl_opts = export_mgr.createSTLExportOptions(body, stl_filepath)
-                        stl_opts.sendToPrintUtility = False
-                        stl_opts.isBinaryFormat = True
-                        stl_opts.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementHigh
-                        export_mgr.execute(stl_opts)
+                        export_success = False
+                        filename = ''
+                        filepath = ''
+
+                        if requested_format == '3mf' and hasattr(export_mgr, 'createC3MFExportOptions'):
+                            try:
+                                filename = f'{sname}.3mf'
+                                filepath = os.path.join(temp_dir, filename)
+                                opts = export_mgr.createC3MFExportOptions(body, filepath)
+                                opts.sendToPrintUtility = False
+                                export_mgr.execute(opts)
+                                export_success = True
+                            except Exception:
+                                export_success = False
+
+                        if not export_success:
+                            filename = f'{sname}.stl'
+                            filepath = os.path.join(temp_dir, filename)
+                            stl_opts = export_mgr.createSTLExportOptions(body, filepath)
+                            stl_opts.sendToPrintUtility = False
+                            stl_opts.isBinaryFormat = True
+                            stl_opts.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementHigh
+                            export_mgr.execute(stl_opts)
 
                         bbox = body.boundingBox
                         w = round((bbox.maxPoint.x - bbox.minPoint.x) * 10.0, 2)
@@ -930,8 +947,9 @@ if IN_FUSION:
 
                         manifest_parts.append({
                             'id': f'part_{idx+1}',
-                            'name': stl_filename,
-                            'fileName': stl_filename,
+                            'name': filename,
+                            'fileName': filename,
+                            'format': '3mf' if filename.endswith('.3mf') else 'stl',
                             'bodyName': body.name,
                             'material': item['material'],
                             'color': extract_body_color(body),
@@ -993,7 +1011,9 @@ if IN_FUSION:
 
                     bridge_source = f'http://127.0.0.1:{port}/'
                     encoded_source = urllib.parse.quote(bridge_source)
-                    base_url = payload.get('webappUrl') or 'http://localhost:8000'
+                    base_url = (payload.get('webappUrl') or '').strip()
+                    if not base_url:
+                        base_url = 'https://joginfrancis.github.io/3d-print-management'
                     full_web_url = f'{base_url}/?source={encoded_source}'
 
                     try:
