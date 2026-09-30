@@ -1,6 +1,6 @@
-# FabLab 3D Print Bridge for Autodesk Fusion 360
+# Fusion Bulk Export for 3D Printing
 
-Seamless, high-performance bridge connecting **Autodesk Fusion 360** directly to the **FabLab 3D Print Plate Builder** web application or offline slicing workflows.
+An intuitive, high-performance **Autodesk Fusion 360** add-in for bulk exporting solid bodies, components, and assemblies for 3D printing — featuring folder hierarchy preservation, material profiles, and seamless 1-click bridge to the **FabLab Plate Builder** web app.
 
 ---
 
@@ -13,9 +13,11 @@ Seamless, high-performance bridge connecting **Autodesk Fusion 360** directly to
    - **Click-to-deselect**: clicking an already-selected body toggles it off.
    - **Deselect All (`✕`)** and **Select All Visible (`👁`)** shortcuts.
 
-2. **Smart Destinations**:
-   - **Send to FabLab Web App** *(Default)*: Spins up an ephemeral local HTTP bridge server, packages models and metadata, and automatically opens your browser with all parts placed on the 3D build plate.
-   - **Export to Folder**: Saves high-refinement binary STLs locally, with an option to **"Keep Object Structure"** (preserves nested component subfolder hierarchies).
+2. **Bulk Export & Smart Destinations**:
+   - **Export to Folder**: Saves high-refinement binary STLs locally in bulk.
+   - **"Keep Object Structure"**: Preserves the CAD project's nested component hierarchy as physical subfolders on disk (e.g. `/Export/Assembly/SubAssembly/Part.stl`).
+   - **Send to FabLab Web App** *(Default)*: Spins up an ephemeral local bridge server, packages models and metadata, and automatically opens your browser with all parts placed on the 3D build plate.
+   - **Bambu Studio Integration**: Direct project export with part stacking.
 
 3. **Material & Configuration Profiles**:
    - Default material presets: PLA, PETG, ABS, TPU.
@@ -60,10 +62,10 @@ Copy the entire repository folder contents to:
 1. Open Autodesk Fusion 360.
 2. Go to the **UTILITIES** tab (or press **Shift + S**).
 3. Click **Scripts and Add-Ins**, then navigate to the **Add-Ins** tab.
-4. Locate **FabLab 3D Print Bridge** in the list.
+4. Locate **FabLab 3D Print Bridge / Bulk Export** in the list.
 5. Click **Run** (check *"Run on Startup"* for automatic launch).
 6. Click the **"Send to Plate Builder"** button in the Solid / Utilities toolbar.
-7. Select the bodies you want to print, customize materials or destinations, and click **Send to FabLab Web App**!
+7. Select the bodies you want to print, choose your export destination, and click **Export**!
 
 ---
 
